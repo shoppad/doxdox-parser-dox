@@ -114,7 +114,6 @@ const parser = (content, filename) => {
         linkableObjects[name] = uid;
       }
     });
-    // console.log(linkableObjects);
 
     // Build out
     return methods.map(method => {
@@ -160,13 +159,10 @@ const parser = (content, filename) => {
                     })),
                 'return': method.tags
                     .filter(tag => tag.type === 'return' || tag.type === 'returns')
-                    .map(tag => {
-                      // console.log(tag);
-                      return {
+                    .map(tag => ({
                           'types': tag.types.map(type => formatStringWithLinkable(type, linkableObjects)),
                           'description': tag.description
-                      }
-                    })
+                    })),
               }
           };
           
@@ -176,13 +172,13 @@ const parser = (content, filename) => {
             params.type = method.ctx.type;
             params.name = formatStringForName(method.ctx.string);
           } else if (isCallbackOrTypedef(method)) {
+            // Typedef / callback
             params.uid = formatStringForUID(`${filename}-${method.tags[0].string}`);
-            // console.log(params.uid);
             params.type = method.tags[0].type;
             params.name = formatStringForName(method.tags[0].string, params.type);
             params.toBottom = true;
             if (method.tags[0].type === 'typedef') {
-              params.skipReturns = true;
+              params.notFunction = true;
               params.params = '';
             }
 
