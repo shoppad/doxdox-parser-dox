@@ -59,8 +59,6 @@ const formatStringWithLinkable = (content, linkableObjects = {}) => {
   return string;
 }
 
-
-
 /**
  * Format string as UID.
  *
@@ -96,6 +94,7 @@ const isCallbackOrTypedef = method => method.tags.length && (method.tags[0].type
  * @public
  */
 const parser = (content, filename) => {
+    // console.log( filename);
     const linkableObjects = {};
 
     const methods = dox
@@ -107,6 +106,10 @@ const parser = (content, filename) => {
     
     // First build linkable items
     methods.forEach(method => {
+        if (filename == '/Users/alex/workspace/shoppad/ShopPad/pub-site/apps/mesa/services/v8/js/packages/mapping-1.0.0/vendor/Mapping.js') {
+            console.log(method);
+        }
+        // console.log(method);
       if (isCallbackOrTypedef(method)) {
         const name = formatStringForName(method.tags[0].string, method.tags[0].type)
           .replace(/^\{[a-z]*\}\ /i, '');
@@ -121,6 +124,7 @@ const parser = (content, filename) => {
             'isPrivate': method.isPrivate,
             'description': method.description.full,
             'empty': !method.description.full && !method.tags.length,
+            'line': method.line,
             'params': method.tags
               .filter(tag => tag.type === 'param' && !tag.name.match(/\./u))
               .map(tag => {
@@ -170,7 +174,14 @@ const parser = (content, filename) => {
             // Normal method
             params.uid = formatStringForUID(`${filename}-${method.ctx.string}`);
             params.type = method.ctx.type;
-            params.name = formatStringForName(method.ctx.string);
+            let name = method.ctx.string;
+            if (method.tags.length && method.tags[0].type === 'memberof') {
+                name = `${method.tags[0].string.replace('#', '')}.${name}`;
+            }
+            params.name = formatStringForName(name);
+            if (method.ctx.type === 'declaration') {
+                params.notFunction = true;
+            }
           } else if (isCallbackOrTypedef(method)) {
             // Typedef / callback
             params.uid = formatStringForUID(`${filename}-${method.tags[0].string}`);
@@ -181,7 +192,6 @@ const parser = (content, filename) => {
               params.notFunction = true;
               params.params = '';
             }
-
           } else {
             method.empty = true;
           }
@@ -198,7 +208,7 @@ const parser = (content, filename) => {
           } else if (b.toBottom) {
             return -1;
           }
-          return 0;
+          return a.line - b.line;
         })
 };
 
