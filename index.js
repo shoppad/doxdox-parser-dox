@@ -94,7 +94,6 @@ const isCallbackOrTypedef = method => method.tags.length && (method.tags[0].type
  * @public
  */
 const parser = (content, filename) => {
-    // console.log( filename);
     const linkableObjects = {};
 
     const methods = dox
@@ -106,10 +105,6 @@ const parser = (content, filename) => {
     
     // First build linkable items
     methods.forEach(method => {
-        if (filename == '/Users/alex/workspace/shoppad/ShopPad/pub-site/apps/mesa/services/v8/js/packages/mapping-1.0.0/vendor/Mapping.js') {
-            console.log(method);
-        }
-        // console.log(method);
       if (isCallbackOrTypedef(method)) {
         const name = formatStringForName(method.tags[0].string, method.tags[0].type)
           .replace(/^\{[a-z]*\}\ /i, '');
@@ -202,7 +197,7 @@ const parser = (content, filename) => {
         .filter(method => !method.empty)
         .sort((a, b) => {
           if (a.toBottom && b.toBottom) {
-            return a.type > b.type;
+            return a.line - b.line;
           } else if (a.toBottom) {
             return 1;
           } else if (b.toBottom) {
