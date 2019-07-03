@@ -115,6 +115,7 @@ const parser = (content, filename) => {
 
     // Build out
     return methods.map(method => {
+      
           const params = {
             'isPrivate': method.isPrivate,
             'description': method.description.full,
@@ -164,6 +165,11 @@ const parser = (content, filename) => {
                     })),
               }
           };
+
+          // Is ignored?
+          if (method.tags.filter(tag => tag.type === 'ignore').length) {
+            params.ignore = true;
+          }
           
           if (method.ctx) {
             // Normal method
@@ -188,13 +194,13 @@ const parser = (content, filename) => {
               params.params = '';
             }
           } else {
-            method.empty = true;
+            params.empty = true;
           }
 
           return params;
 
         })
-        .filter(method => !method.empty)
+        .filter(method => !method.empty && !method.ignore)
         .sort((a, b) => {
           if (a.toBottom && b.toBottom) {
             return a.line - b.line;
